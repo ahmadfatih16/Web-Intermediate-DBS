@@ -1,6 +1,8 @@
 import '../styles/styles.css';
 import 'leaflet/dist/leaflet.css';
 import App from './pages/app';
+import { registerServiceWorker } from './utils';
+import { subscribePushNotification } from './utils/push-notification-helper';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const app = new App({
@@ -8,7 +10,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     drawerButton: document.querySelector('#drawer-button'),
     navigationDrawer: document.querySelector('#navigation-drawer'),
   });
-
 
   const logoutItem = document.getElementById('logout-item'); 
   const token = localStorage.getItem('authToken');
@@ -21,6 +22,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.addEventListener('hashchange', async () => {
     await app.renderPage();
   });
+  
+  // Daftarkan service worker
+  const registration = await registerServiceWorker();
+  
+  // Subscribe ke push notification jika user sudah login
+  if (registration && token) {
+    await subscribePushNotification(registration);
+  }
 });
 
 

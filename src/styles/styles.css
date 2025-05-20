@@ -177,6 +177,20 @@ form button:hover {
 
 
 /* Home Page - Story List */
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.push-buttons {
+  display: flex;
+  gap: 10px;
+}
+
 #story-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -215,6 +229,8 @@ form button:hover {
   font-size: 0.95rem;
   color: #555;
 }
+
+
 
 /* skip to content */
 .skip-link {
@@ -297,6 +313,39 @@ form button:hover {
   margin-bottom: 0.5rem;
 }
 
+/* Push Notification Buttons */
+#subscribe-button,
+#unsubscribe-button {
+  padding: 10px 16px;
+  background-color: #4caf50; 
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#subscribe-button:hover,
+#unsubscribe-button:hover {
+  background-color: #388e3c;
+}
+
+#unsubscribe-button {
+  background-color: #f44336; 
+}
+
+#unsubscribe-button:hover {
+  background-color: #d32f2f;
+}
+
+#notif-status {
+  margin-top: 10px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #333;
+}
 
 
 
