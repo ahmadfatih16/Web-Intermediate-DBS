@@ -6,6 +6,7 @@ import AddStoryPage from '../pages/add/add-story-page';
 import LogoutPage from '../pages/logout/logout-page';
 import DetailPage from '../pages/detail/detail-page.js';
 import MapPage from '../pages/maps/map-page.js';
+import SavedPage from '../pages/saved/saved-page.js';
 
 const routes = {
   '/': new HomePage(),
@@ -17,6 +18,7 @@ const routes = {
   '/logout': new LogoutPage(),
   '/detail/:id': new DetailPage(),
   '/maps': new MapPage(),
+  '/saved': new SavedPage(),
 };
 
 export default routes;

@@ -18,21 +18,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await app.renderPage();
-  
+
   window.addEventListener('hashchange', async () => {
     await app.renderPage();
   });
-  
-  // Daftarkan service worker
-  const registration = await registerServiceWorker();
-  
-  // Subscribe ke push notification jika user sudah login
-  if (registration && token) {
-    await subscribePushNotification(registration);
+
+  // ✅ Daftarkan service worker jika didukung
+  if ('serviceWorker' in navigator && 'PushManager' in window) {
+    try {
+      const registration = await registerServiceWorker();
+      console.log('Service Worker registered');
+
+      if (token) {
+        await subscribePushNotification(registration);
+      }
+    } catch (error) {
+      console.error('SW registration or push subscription failed:', error);
+    }
+  } else {
+    console.warn('Service Worker or PushManager not supported in this browser.');
   }
 });
 
-
+// 🔁 Tetap pertahankan ini untuk stop stream kamera saat hashchange
 window.addEventListener('hashchange', () => {
   if (Array.isArray(window.currentStreams)) {
     window.currentStreams.forEach((stream) => {

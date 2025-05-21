@@ -1,19 +1,24 @@
 import CONFIG from '../config';
 
 function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding)
-    .replace(/-/g, '+')
+    .replace(/\-/g, '+')
     .replace(/_/g, '/');
 
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
 
-  for (let i = 0; i < rawData.length; i += 1) {
+  for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
   return outputArray;
 }
+
+console.log('VAPID PUBLIC KEY:', CONFIG.PUSH_MSG_VAPID_PUBLIC_KEY);
+console.log('Converted applicationServerKey:', urlBase64ToUint8Array(CONFIG.PUSH_MSG_VAPID_PUBLIC_KEY));
+console.log('Raw VAPID key:', CONFIG.PUSH_MSG_VAPID_PUBLIC_KEY);
+
 
 async function subscribePushNotification(registration) {
   try {
@@ -23,7 +28,6 @@ async function subscribePushNotification(registration) {
       return;
     }
 
-    // Meminta izin notifikasi jika belum diizinkan
     if (Notification.permission !== 'granted') {
       const status = await Notification.requestPermission();
       if (status !== 'granted') {
@@ -32,7 +36,16 @@ async function subscribePushNotification(registration) {
       }
     }
 
-    // Subscribe ke push manager
+    // Cek subscription lama
+    const existingSubscription = await registration.pushManager.getSubscription();
+
+    if (existingSubscription) {
+      // Cek apakah applicationServerKey sama (tidak bisa dicek langsung, jadi biasanya kita hapus dulu)
+      console.log('Existing subscription found, unsubscribing first...');
+      await existingSubscription.unsubscribe();
+    }
+
+    // Lanjut subscribe baru
     const subscribeOptions = {
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(CONFIG.PUSH_MSG_VAPID_PUBLIC_KEY),
@@ -41,7 +54,8 @@ async function subscribePushNotification(registration) {
     const pushSubscription = await registration.pushManager.subscribe(subscribeOptions);
     console.log('Push notification subscription:', JSON.stringify(pushSubscription));
 
-    // Kirim subscription ke server
+    const subscriptionJSON = pushSubscription.toJSON();
+
     const response = await fetch(CONFIG.PUSH_MSG_SUBSCRIBE_URL, {
       method: 'POST',
       headers: {
@@ -49,7 +63,11 @@ async function subscribePushNotification(registration) {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        subscription: pushSubscription.toJSON(),
+        endpoint: subscriptionJSON.endpoint,
+        keys: {
+          p256dh: subscriptionJSON.keys.p256dh,
+          auth: subscriptionJSON.keys.auth,
+        },
       }),
     });
 
@@ -62,6 +80,7 @@ async function subscribePushNotification(registration) {
     console.error('Failed to subscribe to push notification:', error);
   }
 }
+
 
 async function unsubscribePushNotification(registration) {
   try {
@@ -77,15 +96,14 @@ async function unsubscribePushNotification(registration) {
       return;
     }
 
-    // Kirim permintaan unsubscribe ke server
     const response = await fetch(CONFIG.PUSH_MSG_UNSUBSCRIBE_URL, {
-      method: 'POST',
+      method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        subscription: subscription.toJSON(),
+        endpoint: subscription.endpoint,
       }),
     });
 
@@ -93,7 +111,6 @@ async function unsubscribePushNotification(registration) {
       throw new Error('Failed to unsubscribe from push notification on server');
     }
 
-    // Unsubscribe dari browser
     const result = await subscription.unsubscribe();
     console.log('Push notification unsubscribed:', result);
   } catch (error) {

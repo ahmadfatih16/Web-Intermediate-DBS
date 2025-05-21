@@ -8,11 +8,11 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
-
-
     <title>Ceritapps</title>
-
     <script type="module" src="/scripts/index.js"></script>
+
+    <link rel="manifest" href="/manifest.json">
+  
   </head>
   <body>
     <a href="#main-content" class="skip-link" onclick="event.preventDefault(); document.getElementById('main-content').focus()">Skip to content</a>
@@ -26,6 +26,7 @@
             <li><a href="#/add">Tambah Cerita</a></li>
             <li><a href="#/">Beranda</a></li>
             <li><a href="#/maps">Maps</a></li>
+            <li><a href="#/saved">Cerita Tersimpan</a></li>
             <li><a href="#/about">About</a></li>
             <li id="logout-item" style="display: none;"><a href="#/logout">Logout</a></li>
           </ul>
